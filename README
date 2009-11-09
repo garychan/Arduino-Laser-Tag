@@ -1,4 +1,4 @@
-/* Collexion Arduino Laser Tag v1
+/* Collexion Arduino Laser Tag v1.1
 * It's craptastic!
 
 * Okay, so basically we are going offload the carrier wave generation and the initial I/O
@@ -93,13 +93,7 @@ TODO: Use a period or something to denote we are done entering players. Right no
 the arduino will now display all the names we entered, just to make sure they were really there. Note that
 a lot of this stuff is extra functionality just for debugging and making all this work as a prototype.
 
-Here is the one nasty bug in the program, but it only applies if you are using the serial LCD. If you are
-working with only the arduino IDE serial monitor, you won't notice it... Now that we've loaded all the names 
-and we've confirmed that the names really are what we wanted, the arduino will say "STARTING GAME..." and the
-game loop will begin. If you are using the serial LCD, the screen goes dark. I don't know why. To fix the problem,
-you have to unplug the GND connection for the LCD from the arduino, and when the LCD is unplugged, send a
-player code to the serial monitor. This will cause the player to be "hit" and the serial monitor will indicate
-this and have a delay. During this delay, plug the LCD back into the GND pin. Everything functions as normal now.
+[[Bug fixed]]
 
 So how do you "hit" a player?
 I did a dirty hack to read in characters instead of a BCD (binary coded decimal) when the player gets hit
@@ -121,8 +115,11 @@ if you keep the monitor open for very long, CPU usage goes up... memory usage go
 Eventually, however, the functionality of using the serial monitor on the PC will be replaced by an external UART that will
 handle all this data recieving. 
 
-Also, I don't have any buttons with me right this moment, so I didn't bother coding up a "transmit" function yet. But it'll
-be pretty easy, just sending out data on a digital or analog pin. We can discuss this further... later. 
+A simple function is in there now to emulate sending data. it has a small counter that counts up in the loop() function
+(the main game function controller) to prevent you from repeatedly firing. there is a delay (the counter reaching 100,
+about 1 second at the current timing) so that you can only fire at certain intervals. This counter is displayed right now
+as the SD: variable on the screen during the "no hit" screen. note that it will flow off the side of the lcd when this number
+gets sufficiently large... it doesn't matter though, just showing that the number exists and is counting for debug purposes.
 
 
 Enjoy :)

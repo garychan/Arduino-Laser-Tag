@@ -31,7 +31,10 @@ void flushSerialIn();
 void readInHit();
 void populatePlayerTable();
 void printPlayerNames(int playPos);
+void sendMyInfo();
 char inBit;
+int sendDelay = 100; // so you can't constantly fire your gun
+int triggerPin = 2;
 const int MAX_PLAYERS = 16; // if 4-bit player code. Leaving 4-bits for error checksumming if 1 byte code.
 char* playerNames[] = {"PLAYER0", "PLAYER1", "PLAYER2", "PLAYER3", "PLAYER4", "PLAYER5", "PLAYER6", "PLAYER7", 
                        "PLAYER8", "PLAYER9", "PLAYERA", "PLAYERB", "PLAYERC", "PLAYERD", "PLAYERE", "PLAYERF"};
@@ -39,6 +42,7 @@ char* uglyNameFix = "INVALID!";
 
 
 void setup () {
+ pinMode(triggerPin, INPUT);
  Serial.begin(9600); 
  flushSerialIn();
  delay(500);
@@ -50,10 +54,12 @@ void setup () {
  delay(1000);
  selectLineOne();
  Serial.print("Starting Game...");
- delay(2000);
+ delay(1000);
  clearLCD();
  setBrightnessFull();
  flushSerialIn(); 
+ selectLineOne();
+ delay(1000);
  loop();
 }
 
@@ -74,10 +80,18 @@ void loop() {
     flushSerialIn();
   }
   
+  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 100))
+    sendMyInfo();
+  
   selectLineOne();
-  Serial.print("No Hit...");
+  Serial.print("No Hit... SD:");
+  Serial.print(sendDelay);
   delay(10);
-    
+  
+  if (sendDelay == 32760) // prevent int overflow.
+    sendDelay = 32760;
+  else 
+    sendDelay++;
 }
 
 
@@ -107,17 +121,17 @@ else if ((inBit == '8') )
   return playerNames[8];
 else if ((inBit == '9') )
   return playerNames[9];
-else if ((inBit == 'a') )
+else if ((inBit == 'a') || (inBit == 'A') )
   return playerNames[10];
-else if ((inBit == 'b') )
+else if ((inBit == 'b') || (inBit == 'B') )
   return playerNames[11];
-else if ((inBit == 'c') )
+else if ((inBit == 'c') || (inBit == 'C') )
   return playerNames[12];
-else if ((inBit == 'd') )
+else if ((inBit == 'd') || (inBit == 'D') )
   return playerNames[13];
-else if ((inBit == 'e') )
+else if ((inBit == 'e') || (inBit == 'E') )
   return playerNames[14];
-else if ((inBit == 'f') )
+else if ((inBit == 'f') || (inBit == 'F') )
   return playerNames[15];
   
 else 
@@ -232,6 +246,14 @@ void printPlayerNames(int playPos) {
     delay(1000);
   }
   flushSerialIn();
+}
+void sendMyInfo() 
+{
+  clearLCD();
+  selectLineOne();
+  Serial.print("Send my data!");
+  delay(1000);
+  sendDelay = 0;
 }
 
 int main(void)
