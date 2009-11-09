@@ -32,9 +32,9 @@ This is connected to the arduino serial com TX port (pin 1). Also, it needs 5V a
 
 It looks like this:
 
-			      ---------tx-------
-			      |			|
-	 -------------------------         	|
+                              ---------tx-------
+                              |                 |
+         -------------------------              |
 	 |		      1  |	---------------------------------
    USB=> |			 |	|				|
 	 |  Arduino      	 |	|	SERIAL LCD (16x2)	|
