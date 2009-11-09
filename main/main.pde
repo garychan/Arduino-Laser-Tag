@@ -73,8 +73,11 @@ void loop() {
   selectLineOne();
   Serial.print("No Hit...       ");
   selectLineTwo();
-  Serial.print("SendDelay:");
-  Serial.print(sendDelay);
+  Serial.print("Gun:");
+  if (sendDelay < 200)
+    Serial.print(" Charging.. ");
+  else
+    Serial.print(" READY!     ");
   delay(10);
   
   if (sendDelay == 32760) // prevent int overflow.

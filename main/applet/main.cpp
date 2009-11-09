@@ -33,7 +33,7 @@ void populatePlayerTable();
 void printPlayerNames(int playPos);
 void sendMyInfo();
 char inBit;
-int sendDelay = 100; // so you can't constantly fire your gun
+int sendDelay = 200; // so you can't constantly fire your gun
 int triggerPin = 2;
 const int MAX_PLAYERS = 16; // if 4-bit player code. Leaving 4-bits for error checksumming if 1 byte code.
 char* playerNames[] = {"PLAYER0", "PLAYER1", "PLAYER2", "PLAYER3", "PLAYER4", "PLAYER5", "PLAYER6", "PLAYER7", 
@@ -80,14 +80,17 @@ void loop() {
     flushSerialIn();
   }
   
-  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 300))
+  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 200))
     sendMyInfo();
   
   selectLineOne();
   Serial.print("No Hit...       ");
   selectLineTwo();
-  Serial.print("SendDelay:");
-  Serial.print(sendDelay);
+  Serial.print("Gun:");
+  if (sendDelay < 200)
+    Serial.print(" Charging.. ");
+  else
+    Serial.print(" READY!     ");
   delay(10);
   
   if (sendDelay == 32760) // prevent int overflow.
@@ -250,11 +253,13 @@ void printPlayerNames(int playPos) {
   flushSerialIn();
 }
 void sendMyInfo() 
-{
+{ // if we pull the trigger... IDENITIFY OURSELF!
   clearLCD();
+  delay(50);
   selectLineOne();
-  Serial.print("Send my data!");
+  Serial.print("Sending my info!");
   delay(1000);
+  clearLCD();
   sendDelay = 0;
 }
 
