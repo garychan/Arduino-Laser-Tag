@@ -21,17 +21,17 @@ else if ((inBit == '8') )
   return playerNames[8];
 else if ((inBit == '9') )
   return playerNames[9];
-else if ((inBit == 'a') )
+else if ((inBit == 'a') || (inBit == 'A') )
   return playerNames[10];
-else if ((inBit == 'b') )
+else if ((inBit == 'b') || (inBit == 'B') )
   return playerNames[11];
-else if ((inBit == 'c') )
+else if ((inBit == 'c') || (inBit == 'C') )
   return playerNames[12];
-else if ((inBit == 'd') )
+else if ((inBit == 'd') || (inBit == 'D') )
   return playerNames[13];
-else if ((inBit == 'e') )
+else if ((inBit == 'e') || (inBit == 'E') )
   return playerNames[14];
-else if ((inBit == 'f') )
+else if ((inBit == 'f') || (inBit == 'F') )
   return playerNames[15];
   
 else 
