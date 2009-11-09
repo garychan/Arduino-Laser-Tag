@@ -20,7 +20,7 @@
 
 
 char inBit;
-int sendDelay = 100; // so you can't constantly fire your gun
+int sendDelay = 200; // so you can't constantly fire your gun
 int triggerPin = 2;
 const int MAX_PLAYERS = 16; // if 4-bit player code. Leaving 4-bits for error checksumming if 1 byte code.
 char* playerNames[] = {"PLAYER0", "PLAYER1", "PLAYER2", "PLAYER3", "PLAYER4", "PLAYER5", "PLAYER6", "PLAYER7", 
@@ -67,7 +67,7 @@ void loop() {
     flushSerialIn();
   }
   
-  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 300))
+  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 200))
     sendMyInfo();
   
   selectLineOne();
