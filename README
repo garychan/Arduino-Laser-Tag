@@ -1,0 +1,129 @@
+/* Collexion Arduino Laser Tag v1
+* It's craptastic!
+
+* Okay, so basically we are going offload the carrier wave generation and the initial I/O
+* to an external circuit. This elimates the problem of hacking in bit-banging on the arduino
+* that could better use the processing time. The carrier wave can be a 555 stable ckt...
+* 
+* Instead, the arduino will handle LUTs of the user ID's of the game (that will be hashed and
+* uploaded to the system before each game. Also, it will keep track of the number of times
+* the user was hit and from whom.
+* 
+* The arduino will also send the pulses of data that will be used when shooting the gun. This
+* will contain who is shooting the gun as a one-byte stream.
+* 
+* An external UART circuit will act as a buffer for recieving data via the IR sensors on the player.
+* This massively simplifies the amount of hacking we have to do on the arduino, and also
+* because the UART will contain a buffer, we don't have to worry about the paralellism problem
+* of what happens when you shoot and get hit at the same time. :)
+
+I'm really bad at writing documentation, but here it goes. This program right now, as it stands,
+it really REALLY RREEAAALLLYYYY UGLY. Like I hardly want my name attached to it. Also, I apologize
+for my poorly commented code. But for the highlights, here's how it works:
+
+HARDWARE:
+---------------------
+
+The way I have this set up is to print out stuff to a small LCD screen that communicated over 
+serial protocol, which I bought from SparkFun here: 
+http://www.sparkfun.com/commerce/product_info.php?products_id=9395
+
+This is connected to the arduino serial com TX port (pin 1). Also, it needs 5V and a ground.
+
+It looks like this:
+
+			      ---------tx-------
+			      |			|
+	 -------------------------         	|
+	 |		      1  |	---------------------------------
+   USB=> |			 |	|				|
+	 |  Arduino      	 |	|	SERIAL LCD (16x2)	|
+	 |  Duemilanove		 |	|				|
+	 |			 |	---------------------------------
+	 |		5V  GND  |	       | |
+	 -------------------------	       | |
+	 		 |   |______gnd________| |
+	 		 |__________5V___________|
+	 		 
+Pretty nifty. Now. Eventually the RX pin of the arduino (pin 0) will be connected to an external 
+circuit (the UART circuit). But for now, we will use the USB cable to communicate with the 
+arduino via the serial monitor on our nifty (linux!) PC. The one in the arduino IDE works fine.
+
+INTERFACING:
+-----------------------
+
+Let's get to interfacing! The fun part!
+
+A word of warning: if you don't have the serial LCD display hooked up, you won't see clean outputs.
+The serial monitor in the arduino IDE looks at every byte that is transferred. Coincidentally, the
+same output goes to the serial monitor as does through the TX pin to the LCD (I guess that's why it's
+called a serial MONITOR haha :) ). So you'll see the special control bytes that are needed by the LCD.
+Don't worry about it though, just be aware of what they are.
+
+For instance, where the LCD will output:
+	"No Hit..."
+	
+The arduino serial monitor will show:
+	"þNo Hit..."
+	
+For more information about the control characters, check out the (crappy) datasheet Sparkfun has for 
+this particular family of LCD's at: http://www.sparkfun.com/datasheets/LCD/SerLCD_V2_5.PDF .
+
+So. Now that we cleared that up. When the arduino is uploaded with the sketch, you'll have to reboot
+the board. This is because that same TX pin that is going to the LCD? Well, its also the one the 
+arduino uses to communicate during an upload. Pro: you get to see the byte-for-byte code of the sketch
+on the arduino. Con: it locks up the LCD with garbage control codes.
+
+Now that we've rebooted the arduino, we will be greeted with the message "Input Players:". This is
+a loop waiting for the names of the 16 players (players 0-F) of the game. Look at the code, this is
+somewhat expandable. So in the serial monitor we can start typing in names of players. Right now,
+each player name MUST be 7 (AND ONLY 7!!!) characters long. They can be any valid ASCII character, 
+except control characters. Basically anything you can type is valid.
+
+If you just want to name them all in order, for instance, you can enter in the line:
+"player0player1player2player3player4player5player6player7player8player9playeraplayerbplayercplayerdplayereplayerf"
+and press enter. This will load all the names.
+
+TODO: Eventually, we will use commas to seperate player names and handle names less than 7 chars. Note
+that we can make names less than 7 chars now by typing spaces in place of the remaining chars.
+
+TODO: Use a period or something to denote we are done entering players. Right now we MUST enter in all 
+16 player names.
+
+the arduino will now display all the names we entered, just to make sure they were really there. Note that
+a lot of this stuff is extra functionality just for debugging and making all this work as a prototype.
+
+Here is the one nasty bug in the program, but it only applies if you are using the serial LCD. If you are
+working with only the arduino IDE serial monitor, you won't notice it... Now that we've loaded all the names 
+and we've confirmed that the names really are what we wanted, the arduino will say "STARTING GAME..." and the
+game loop will begin. If you are using the serial LCD, the screen goes dark. I don't know why. To fix the problem,
+you have to unplug the GND connection for the LCD from the arduino, and when the LCD is unplugged, send a
+player code to the serial monitor. This will cause the player to be "hit" and the serial monitor will indicate
+this and have a delay. During this delay, plug the LCD back into the GND pin. Everything functions as normal now.
+
+So how do you "hit" a player?
+I did a dirty hack to read in characters instead of a BCD (binary coded decimal) when the player gets hit
+because it was easier to code for a prototype, so all player numbers are the hex digits 0-F. You can look
+at the code how the dirty, ugly nasty-ass lookup table thing works... basically during this game loop, the serial
+monitor (and the LCD if you fix it as above) will keep outputting "No Hit..." every 10 milliseconds or whatever
+you set the delay to be in the code. This means we are looking every 10ms to see if there is data to be read in.
+That means the maximum lag between getting hit and knowing you've gotten hit is however long the UART takes
+to process the data (on the order of ms) plus 10ms. This is basically instantaneous. Fake parallelism!
+
+Now, in the serial monitor, while it's saying "No Hit..." you can type in any character 0-F in hex (upper or lowercase)
+and the monitor will display that you've been hit. For now it only shows what the input was on serial (useful for
+debugging when you start messing with how you assign player numbers), and then on the second line of the LCD
+it will show who hit you (the actual player name).
+
+And it keeps on looping... a word of warning: the serial monitor in the arduino keeps all the data that's read in, so
+if you keep the monitor open for very long, CPU usage goes up... memory usage goes up...
+
+Eventually, however, the functionality of using the serial monitor on the PC will be replaced by an external UART that will
+handle all this data recieving. 
+
+Also, I don't have any buttons with me right this moment, so I didn't bother coding up a "transmit" function yet. But it'll
+be pretty easy, just sending out data on a digital or analog pin. We can discuss this further... later. 
+
+
+Enjoy :)
+- Vincent Purcell (jadedoto@gmail.com)

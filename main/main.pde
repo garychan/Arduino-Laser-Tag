@@ -1,4 +1,4 @@
-/* IROH v2?
+/* ALT v1
 * 
 * Okay, so basically we are going offload the carrier wave generation and the initial I/O
 * to an external circuit. This elimates the problem of hacking in bit-banging on the arduino
@@ -17,29 +17,58 @@
 * of what happens when you shoot and get hit at the same time. :)
 *
 */
-const int MAX_PLAYERS = 32; // if 5-bit player code. Leaving 3-bits for error checksumming if 1 byte code.
-char* playerNames[MAX_PLAYERS];
+
+
+char inBit;
+const int MAX_PLAYERS = 16; // if 4-bit player code. Leaving 4-bits for error checksumming if 1 byte code.
+char* playerNames[] = {"PLAYER0", "PLAYER1", "PLAYER2", "PLAYER3", "PLAYER4", "PLAYER5", "PLAYER6", "PLAYER7", 
+                       "PLAYER8", "PLAYER9", "PLAYERA", "PLAYERB", "PLAYERC", "PLAYERD", "PLAYERE", "PLAYERF"};
+char* uglyNameFix = "INVALID!";
+
 
 void setup () {
+ Serial.begin(9600); 
+ flushSerialIn();
+ delay(500);
+ setBrightnessFull();
  
+ populatePlayerTable();
+ flushSerialIn();
+ clearLCD();
+ delay(1000);
+ selectLineOne();
+ Serial.print("Starting Game...");
+ delay(2000);
+ clearLCD();
+ setBrightnessFull();
+ flushSerialIn(); 
+ loop();
 }
 
 void loop() {
- 
+  if (Serial.available() > 0) {
+    readInHit();
+    
+    selectLineOne();
+    Serial.print("Input: ");
+    Serial.print(inBit);
+    Serial.print("        ");
+    
+    selectLineTwo();
+    Serial.print("Hit by: ");
+    Serial.print( playerNameString() );
+    delay(5000);
+    clearLCD();    
+    flushSerialIn();
+  }
+  
+  selectLineOne();
+  Serial.print("No Hit...");
+  delay(10);
+    
 }
 
-void playerStringDisp(char* playerName) {
-// This function will display to the LCD screen who hit me.
-// This works by getting a string for the LUT function
-// and serial output to the LCD display.
-}
 
-char* playerNameString(int playerCode) {
-// return the playerName at the position playerCode in the playerName LUT.
-}
 
-void populatePlayerLUT() {
-// This reads in via the IR-in link the data that is player names.
-// Each player is assigned a position in a static array of MAX_PLAYERS
-// size.
-}
+
+
