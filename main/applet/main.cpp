@@ -80,11 +80,13 @@ void loop() {
     flushSerialIn();
   }
   
-  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 100))
+  if ((digitalRead(triggerPin) == HIGH) && (sendDelay > 300))
     sendMyInfo();
   
   selectLineOne();
-  Serial.print("No Hit... SD:");
+  Serial.print("No Hit...       ");
+  selectLineTwo();
+  Serial.print("SendDelay:");
   Serial.print(sendDelay);
   delay(10);
   
