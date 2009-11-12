@@ -6,12 +6,13 @@
 */
 
 char playerCodes[] = {"0123456789abcdef"};
-int randNumber1;
+int triggerPin = 2;
 int randomNumber2;
 
 void setup() 
 {
  Serial.begin(9600);
+ pinMode(triggerPin, INPUT);
  randomSeed(analogRead(0));
  loop(); 
 }
@@ -31,12 +32,11 @@ void loop()
 
 void sendData()
 {    
-  randNumber1 = random(0,100);
-   if (randNumber1 == 7) 
+  
+   if (digitalRead(triggerPin) == HIGH) 
    {
     randomNumber2 = random(0, 15);
     Serial.print(playerCodes[randomNumber2]);
-    randNumber1 = 0;
    }
    delay(100);
    sendData();
